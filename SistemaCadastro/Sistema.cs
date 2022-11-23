@@ -12,16 +12,18 @@ using System.IO;
 namespace SistemaCadastro
 {
     public partial class Sistema : Form
-    {
+    { 
+        int idAlterar;
+    
         private object textintegrantes;
         private object textranking;
 
         public Sistema()
         {
             InitializeComponent();
-            
+
         }
-        
+
         private void button2_Click(object sender, EventArgs e)
         {
             Application.Exit();
@@ -33,7 +35,7 @@ namespace SistemaCadastro
             marcador.Top = btnCadastra.Top;
             tabControl1.SelectedTab = tabControl1.TabPages[0];
         }
-        
+
 
         private void btnBusca_Click(object sender, EventArgs e)
         {
@@ -50,6 +52,9 @@ namespace SistemaCadastro
             cbGenero.DataSource = tabelaDados;
             cbGenero.DisplayMember = "genero";
             cbGenero.ValueMember = "idgenero";
+            cbAlteraGenero.DataSource = tabelaDados;
+            cbAlteraGenero.DisplayMember = "genero";
+            cbAlteraGenero.ValueMember = "idgenero";
             lblmsgerro.Text = con.mensagem;
             cbGenero.Text = "";
 
@@ -69,7 +74,7 @@ namespace SistemaCadastro
             txtnome.Focus();
         }
 
-            private void Sistema_Load(object sender, EventArgs e)
+        private void Sistema_Load(object sender, EventArgs e)
         {
             listaGenero();
             listaBanda();
@@ -89,58 +94,76 @@ namespace SistemaCadastro
 
             ConectaBanco conecta = new ConectaBanco();
             bool retorno = conecta.insereBanda(b);
-            if(retorno==true)
-                {
-                    MessageBox.Show("Dados inseridos com Sucesso!");
+            if (retorno == true) {
+                MessageBox.Show("Dados inseridos com Sucesso!");
 
-                 }
+            }
 
-            else 
+            else
                 lblmsgerro.Text = conecta.mensagem;
             listaBanda();
             limpaCampos();
 
-            
+
         }// fim confirma insere banda
 
         private void txtBusca_TextChanged(object sender, EventArgs e)
         {
             (dgBandas.DataSource as DataTable).
-                DefaultView.RowFilter = String.Format("nome like'{0}%'",txtBusca.Text);
+                DefaultView.RowFilter = String.Format("nome like'{0}%'", txtBusca.Text);
         }
 
         private void btnRemoveBanda_Click(object sender, EventArgs e)
         {
-            
-                int linha = dgBandas.CurrentRow.Index;// pega a linha selecionanda
-                int idRemover = Convert.ToInt32(
-                                dgBandas.Rows[linha].Cells["idbandas"].Value.ToString());
-                DialogResult resp = MessageBox.Show("Deseja realmente excluir?", "Remove banda", MessageBoxButtons.OKCancel);
-                if (resp == DialogResult.OK) {
-                    ConectaBanco conecta = new ConectaBanco();
-                    bool retorno = conecta.deletaBanda(idRemover);
-                    if (retorno == true)
-                        MessageBox.Show("Banda excluída");
-                    else
-                        lblmsgerro.Text = conecta.mensagem;
-                    listaBanda();
-                }// fim if ok
-                else
-                    MessageBox.Show("Operação cancelada");
 
-            }
+            int linha = dgBandas.CurrentRow.Index;// pega a linha selecionanda
+            int idRemover = Convert.ToInt32(
+                            dgBandas.Rows[linha].Cells["idbandas"].Value.ToString());
+            DialogResult resp = MessageBox.Show("Deseja realmente excluir?", "Remove banda", MessageBoxButtons.OKCancel);
+            if (resp == DialogResult.OK) {
+                ConectaBanco conecta = new ConectaBanco();
+                bool retorno = conecta.deletaBanda(idRemover);
+                if (retorno == true)
+                    MessageBox.Show("Banda excluída");
+                else
+                    lblmsgerro.Text = conecta.mensagem;
+                listaBanda();
+            }// fim if ok
+            else
+                MessageBox.Show("Operação cancelada");
+
+        }
 
         private void btnAlterar_Click(object sender, EventArgs e)
         {
-            
+            int linha = dgBandas.CurrentRow.Index;// pega a linha selecionanda
+            idAlterar = Convert.ToInt32(
+                    dgBandas.Rows[linha].Cells["idbandas"].Value.ToString());
+            txtAlteraNome.Text = dgBandas.Rows[linha].Cells["nome"].Value.ToString(); // Altera nome
+            txtAlteraIntegrantes.Text = dgBandas.Rows[linha].Cells["integrantes"].Value.ToString(); // Altera integrantes
+            txtAlteraRanking.Text = dgBandas.Rows[linha].Cells["ranking"].Value.ToString(); // Altera ranking
+            cbAlteraGenero.Text = dgBandas.Rows[linha].Cells["genero"].Value.ToString(); // Altera genero
+
+            tabControl1.SelectedTab = tabAlterar; // muda Aba
         }
 
-         private void btnConfirmaAlteracao_Click(object sender, EventArgs e)
+        private void btnConfirmaAlteracao_Click(object sender, EventArgs e)
         {
-            
+            Banda b = new Banda();
+            b.Nome = txtAlteraNome.Text;
+            b.Ranking = Convert.ToInt32(txtAlteraRanking.Text);
+            b.Integrantes = Convert.ToInt32(txtAlteraIntegrantes.Text);
+            b.Genero = Convert.ToInt32(
+                           cbAlteraGenero.SelectedValue.ToString());
 
+            ConectaBanco conecta = new ConectaBanco();
+            bool retorno = conecta.alteraBanda(b, idAlterar);
+            if (retorno)
+                MessageBox.Show("Dados Alterados com Sucesso!");
+            else
+                lblmsgerro.Text = conecta.mensagem;
 
-        }
+        } // Envia os dados Alterados
 
         private void bntAddGenero_Click(object sender, EventArgs e)
         {
